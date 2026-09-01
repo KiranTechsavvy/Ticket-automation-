@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ticket Automation Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Ticket Automation</h1>
+      <p>V1 — safe dashboard prototype</p>
+    </div>
+    <button id="runBtn">Run Check</button>
+  </header>
+
+  <main>
+    <section class="stats">
+      <div class="card"><span>Total</span><strong id="total">0</strong></div>
+      <div class="card"><span>Pending</span><strong id="pending">0</strong></div>
+      <div class="card"><span>Stop & Return</span><strong id="stopReturn">0</strong></div>
+      <div class="card"><span>No Ops Response</span><strong id="noResponse">0</strong></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Tickets</h2>
+        <select id="filter">
+          <option value="all">All</option>
+          <option value="pending">Pending</option>
+          <option value="stop-return">Stop & Return</option>
+          <option value="no-response">No Ops Response</option>
+        </select>
+      </div>
+      <div id="tickets"></div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
