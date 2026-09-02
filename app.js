@@ -1,62 +1,234 @@
+// ===============================
+// TICKET AUTOMATION DASHBOARD
+// ===============================
+
 const tickets = [
-  {id:"SIM-1001", status:"Pending", type:"Stop & Return", ops:"No response", age:"3h"},
-  {id:"SIM-1002", status:"Pending", type:"Normal", ops:"Responded", age:"45m"},
-  {id:"SIM-1003", status:"Pending", type:"Stop & Return", ops:"No response", age:"6h"},
-  {id:"SIM-1004", status:"Resolved", type:"Normal", ops:"Responded", age:"1d"},
-  {id:"SIM-1005", status:"Pending", type:"Normal", ops:"No response", age:"8h"}
+  {
+    id: "SIM-1001",
+    title: "Ticket requires review",
+    status: "Pending",
+    type: "Stop & Return",
+    ops: "No response"
+  },
+  {
+    id: "SIM-1002",
+    title: "Operations response pending",
+    status: "Pending",
+    type: "Normal",
+    ops: "No response"
+  },
+  {
+    id: "SIM-1003",
+    title: "Stop & Return request",
+    status: "Pending",
+    type: "Stop & Return",
+    ops: "Responded"
+  },
+  {
+    id: "SIM-1004",
+    title: "Awaiting operations response",
+    status: "Pending",
+    type: "Normal",
+    ops: "No response"
+  },
+  {
+    id: "SIM-1005",
+    title: "Ticket under review",
+    status: "Pending",
+    type: "Normal",
+    ops: "Responded"
+  }
 ];
 
-const $ = id => document.getElementById(id);
+// ===============================
+// HELPER
+// ===============================
+
+function $(id) {
+  return document.getElementById(id);
+}
+
+// ===============================
+// UPDATE DASHBOARD COUNTERS
+// ===============================
+
+function updateCounters() {
+  if ($("total")) {
+    $("total").textContent = tickets.length;
+  }
+
+  if ($("pending")) {
+    $("pending").textContent =
+      tickets.filter(t => t.status === "Pending").length;
+  }
+
+  if ($("stopReturn")) {
+    $("stopReturn").textContent =
+      tickets.filter(t => t.type === "Stop & Return").length;
+  }
+
+  if ($("noResponse")) {
+    $("noResponse").textContent =
+      tickets.filter(t => t.ops === "No response").length;
+  }
+}
+
+// ===============================
+// RENDER TICKETS
+// ===============================
 
 function render() {
-  const filter = $("filter").value;
-  const search = $
-  ("search").value.toLowercase().trim();
+  const filter = $("filter") ? $("filter").value : "all";
+  const search = $("search")
+    ? $("search").value.toLowerCase().trim()
+    : "";
 
-  const filtered = tickets.filter(t => {
-    if (search && !
-      t.id.toLowercase().includes(search))
+  const filtered = tickets.filter(ticket => {
+
+    // Search by Ticket ID
+    if (
+      search &&
+      !ticket.id.toLowerCase().includes(search)
+    ) {
       return false;
+    }
 
-    if (filter === "pending") return t.status === "Pending";
-    if (filter === "stop-return") return t.type === "Stop & Return";
-    if (filter === "no-response") return t.ops === "No response";
+    // Status/type filters
+    if (
+      filter === "pending" &&
+      ticket.status !== "Pending"
+    ) {
+      return false;
+    }
+
+    if (
+      filter === "stop-return" &&
+      ticket.type !== "Stop & Return"
+    ) {
+      return false;
+    }
+
+    if (
+      filter === "no-response" &&
+      ticket.ops !== "No response"
+    ) {
+      return false;
+    }
+
     return true;
   });
 
-  $("total").textContent = tickets.length;
-  $("pending").textContent = tickets.filter(t => t.status === "Pending").length;
-  $("stopReturn").textContent = tickets.filter(t => t.type === "Stop & Return").length;
-  $("noResponse").textContent = tickets.filter(t => t.ops === "No response").length;
+  const ticketList = $("ticketList");
 
-  $("tickets").innerHTML = filtered.length ? filtered.map(t => `
-    <article class="ticket">
-      <div class="ticket-top">
-        <span class="id">${t.id}</span>
-        <span class="badge">${t.status}</span>
+  if (!ticketList) {
+    console.error("ticketList element not found");
+    return;
+  }
+
+  if (filtered.length === 0) {
+    ticketList.innerHTML = `
+      <div class="empty-state">
+        <p>No tickets found.</p>
       </div>
-      <div class="meta">Type: ${t.type} · Ops: ${t.ops} · Age: ${t.age}</div>
-      <div class="actions">
-        <button onclick="review('${t.id}')">Review</button>
-        <button onclick="simulate('${t.id}')">Simulate Action</button>
+    `;
+    return;
+  }
+
+  ticketList.innerHTML = filtered.map(ticket => `
+    <div class="ticket-card">
+
+      <div class="ticket-main">
+
+        <div class="ticket-id">
+          ${ticket.id}
+        </div>
+
+        <div class="ticket-title">
+          ${ticket.title}
+        </div>
+
+        <div class="ticket-details">
+          <span>
+            Status: ${ticket.status}
+          </span>
+
+          <span>
+            Type: ${ticket.type}
+          </span>
+
+          <span>
+            Ops: ${ticket.ops}
+          </span>
+        </div>
+
       </div>
-    </article>
-  `).join("") : '<div class="empty">No tickets match this filter.</div>';
+
+      <div class="ticket-actions">
+
+        <button
+          onclick="reviewTicket('${ticket.id}')">
+          Review
+        </button>
+
+        <button
+          onclick="simulateAction('${ticket.id}')">
+          Simulate Action
+        </button>
+
+      </div>
+
+    </div>
+  `).join("");
 }
 
-function review(id) {
-  alert(`Review ${id}: manual review required before any real action.`);
+// ===============================
+// REVIEW TICKET
+// ===============================
+
+function reviewTicket(ticketId) {
+  alert(
+    `Review ${ticketId}: manual review required before any real action.`
+  );
 }
 
-function simulate(id) {
-  alert(`Simulation only: no real ticket was changed for ${id}.`);
+// ===============================
+// SIMULATE ACTION
+// ===============================
+
+function simulateAction(ticketId) {
+  alert(
+    `Simulation only: no real ticket was changed for ${ticketId}.`
+  );
 }
 
-$("filter").addEventListener("change", render);
-$("#search").addEventListener("input",render);
-$("runBtn").addEventListener("click", () => {
-  $("runBtn").textContent = "Checked ✓";
-  setTimeout(() => $("runBtn").textContent = "Run Check", 1200);
+// ===============================
+// RUN CHECK
+// ===============================
+
+function runChecks() {
+  const pending = tickets.filter(
+    t => t.status === "Pending"
+  ).length;
+
+  const noResponse = tickets.filter(
+    t => t.ops === "No response"
+  ).length;
+
+  alert(
+    `Check completed.\n\n` +
+    `Pending tickets: ${pending}\n` +
+    `No Ops Response: ${noResponse}\n\n` +
+    `No real ticket was changed.`
+  );
+}
+
+// ===============================
+// EVENT LISTENERS
+// ===============================
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  updateCounters();
   render();
 });
 
