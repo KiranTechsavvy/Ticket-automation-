@@ -10,7 +10,14 @@ const $ = id => document.getElementById(id);
 
 function render() {
   const filter = $("filter").value;
+  const search = $
+  ("search").value.toLowercase().trim();
+
   const filtered = tickets.filter(t => {
+    if (search && !
+      t.id.toLowercase().includes(search))
+      return false;
+
     if (filter === "pending") return t.status === "Pending";
     if (filter === "stop-return") return t.type === "Stop & Return";
     if (filter === "no-response") return t.ops === "No response";
@@ -46,6 +53,7 @@ function simulate(id) {
 }
 
 $("filter").addEventListener("change", render);
+$("#search").addEventListener("input",render);
 $("runBtn").addEventListener("click", () => {
   $("runBtn").textContent = "Checked ✓";
   setTimeout(() => $("runBtn").textContent = "Run Check", 1200);
