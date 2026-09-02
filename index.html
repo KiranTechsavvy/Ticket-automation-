@@ -1,185 +1,183 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#111827">
-  <title>L3 Ticket Automation Dashboard</title>
-  <link rel="stylesheet" href="style.css">
-</head>
+const tickets = [
+  {
+    id: "SIM-1001",
+    title: "Ticket requires review",
+    status: "Pending",
+    type: "Stop & Return",
+    ops: "No response"
+  },
+  {
+    id: "SIM-1002",
+    title: "Operations response pending",
+    status: "Pending",
+    type: "Normal",
+    ops: "No response"
+  },
+  {
+    id: "SIM-1003",
+    title: "Stop & Return request",
+    status: "Pending",
+    type: "Stop & Return",
+    ops: "Responded"
+  },
+  {
+    id: "SIM-1004",
+    title: "Awaiting operations response",
+    status: "Pending",
+    type: "Normal",
+    ops: "No response"
+  },
+  {
+    id: "SIM-1005",
+    title: "Ticket under review",
+    status: "Pending",
+    type: "Normal",
+    ops: "Responded"
+  }
+];
 
-<body>
+function $(id) {
+  return document.getElementById(id);
+}
 
-  <header class="topbar">
-    <div class="brand">
-      <div class="brand-icon">⚡</div>
-      <div>
-        <h1>Ticket Automation</h1>
-        <p>L3 Operations Control Center</p>
+function updateCounters() {
+  $("total").textContent = tickets.length;
+
+  $("pending").textContent =
+    tickets.filter(t => t.status === "Pending").length;
+
+  $("stopReturn").textContent =
+    tickets.filter(t => t.type === "Stop & Return").length;
+
+  $("noResponse").textContent =
+    tickets.filter(t => t.ops === "No response").length;
+}
+
+function render() {
+  const filter = $("filter").value;
+  const search = $("search").value.toLowerCase().trim();
+
+  const filtered = tickets.filter(ticket => {
+
+    // Search Ticket ID
+    if (
+      search &&
+      !ticket.id.toLowerCase().includes(search)
+    ) {
+      return false;
+    }
+
+    // Filter
+    if (
+      filter === "pending" &&
+      ticket.status !== "Pending"
+    ) {
+      return false;
+    }
+
+    if (
+      filter === "stop-return" &&
+      ticket.type !== "Stop & Return"
+    ) {
+      return false;
+    }
+
+    if (
+      filter === "no-response" &&
+      ticket.ops !== "No response"
+    ) {
+      return false;
+    }
+
+    return true;
+  });
+
+  const container = $("tickets");
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        No tickets found.
       </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = filtered.map(ticket => `
+    <div class="ticket-card">
+
+      <div class="ticket-main">
+
+        <div class="ticket-id">
+          ${ticket.id}
+        </div>
+
+        <div class="ticket-title">
+          ${ticket.title}
+        </div>
+
+        <div class="ticket-details">
+          <span>Status: ${ticket.status}</span>
+          <span>Type: ${ticket.type}</span>
+          <span>Ops: ${ticket.ops}</span>
+        </div>
+
+      </div>
+
+      <div class="ticket-actions">
+
+        <button onclick="reviewTicket('${ticket.id}')">
+          Review
+        </button>
+
+        <button onclick="simulateAction('${ticket.id}')">
+          Simulate Action
+        </button>
+
+      </div>
+
     </div>
+  `).join("");
+}
 
-    <div class="header-actions">
-      <span class="status-badge">
-        <span class="status-dot"></span>
-        Simulation Mode
-      </span>
-      <button id="runBtn" class="primary-btn">▶ Run Check</button>
-    </div>
-  </header>
+function reviewTicket(ticketId) {
+  alert(
+    `Review ${ticketId}: manual review required before any real action.`
+  );
+}
 
-  <main>
+function simulateAction(ticketId) {
+  alert(
+    `Simulation only: no real ticket was changed for ${ticketId}.`
+  );
+}
 
-    <!-- Dashboard overview -->
-    <section class="overview">
-      <div class="section-title">
-        <div>
-          <h2>Automation Overview</h2>
-          <p>Review ticket conditions before taking action.</p>
-        </div>
-        <span class="safe-label">SAFE • NO LIVE ACTIONS</span>
-      </div>
+function runChecks() {
+  const pending = tickets.filter(
+    t => t.status === "Pending"
+  ).length;
 
-      <div class="stats">
+  const noResponse = tickets.filter(
+    t => t.ops === "No response"
+  ).length;
 
-        <div class="card">
-          <div class="card-icon">🎫</div>
-          <div>
-            <span>Total Tickets</span>
-            <strong id="total">0</strong>
-          </div>
-        </div>
+  alert(
+    `Check completed.\n\n` +
+    `Pending tickets: ${pending}\n` +
+    `No Ops Response: ${noResponse}\n\n` +
+    `No real ticket was changed.`
+  );
+}
 
-        <div class="card">
-          <div class="card-icon">⏳</div>
-          <div>
-            <span>Pending</span>
-            <strong id="pending">0</strong>
-          </div>
-        </div>
+document.addEventListener("DOMContentLoaded", () => {
 
-        <div class="card warning-card">
-          <div class="card-icon">🛑</div>
-          <div>
-            <span>Stop & Return</span>
-            <strong id="stopReturn">0</strong>
-          </div>
-        </div>
+  updateCounters();
+  render();
 
-        <div class="card danger-card">
-          <div class="card-icon">⚠️</div>
-          <div>
-            <span>No Ops Response</span>
-            <strong id="noResponse">0</strong>
-          </div>
-        </div>
+  $("filter").addEventListener("change", render);
 
-      </div>
-    </section>
+  $("search").addEventListener("input", render);
 
+  $("runBtn").addEventListener("click", runChecks);
 
-    <!-- Automation rules -->
-    <section class="rules-panel panel">
-
-      <div class="panel-head">
-        <div>
-          <h2>Automation Rules</h2>
-          <p>Conditions currently evaluated by the dashboard.</p>
-        </div>
-      </div>
-
-      <div class="rules">
-
-        <div class="rule">
-          <span class="rule-number">01</span>
-          <div>
-            <strong>Pending Ticket</strong>
-            <small>Identify tickets requiring follow-up.</small>
-          </div>
-          <span class="rule-status">ACTIVE</span>
-        </div>
-
-        <div class="rule">
-          <span class="rule-number">02</span>
-          <div>
-            <strong>Stop & Return</strong>
-            <small>Flag tickets requiring controlled handling.</small>
-          </div>
-          <span class="rule-status">ACTIVE</span>
-        </div>
-
-        <div class="rule">
-          <span class="rule-number">03</span>
-          <div>
-            <strong>No Ops Response</strong>
-            <small>Highlight tickets waiting for Operations.</small>
-          </div>
-          <span class="rule-status">ACTIVE</span>
-        </div>
-
-      </div>
-    </section>
-
-
-    <!-- Ticket queue -->
-    <section class="panel">
-
-      <div class="panel-head">
-        <div>
-          <h2>Ticket Queue</h2>
-          <p>Review identified tickets before any action.</p>
-        </div>
-
-        <div class="filters">
-          <input id="search" type="text"
-          placeholder="search Ticket ID...">
-          <label for="filter">Filter</label>
-
-          <select id="filter">
-            <option value="all">All Tickets</option>
-            <option value="pending">Pending</option>
-            <option value="stop-return">Stop & Return</option>
-            <option value="no-response">No Ops Response</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="queue-info">
-        <span>🔎 Automated review results</span>
-        <span>Manual approval required</span>
-      </div>
-
-      <div id="tickets"></div>
-
-    </section>
-
-
-    <!-- Safety section -->
-    <section class="safety-panel">
-
-      <div class="safety-icon">🔒</div>
-
-      <div>
-        <h2>Automation Safety Gate</h2>
-        <p>
-          This prototype only analyzes simulated ticket data.
-          No company ticketing system is connected and no real ticket
-          will be modified.
-        </p>
-      </div>
-
-      <span class="safe-label">PROTECTED</span>
-
-    </section>
-
-  </main>
-
-  <footer>
-    <span>Ticket Automation • L3 Operations</span>
-    <span>V2 Prototype • Simulation Only</span>
-  </footer>
-
-  <script src="app.js"></script>
-
-</body>
-</html>
+});
